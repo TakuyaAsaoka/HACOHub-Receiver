@@ -1,7 +1,7 @@
 # Xcode
-**/*.xcworkspace
-**/*.xcuserdata
-**/*.xcuserstate
+**/*xcworkspace
+**/*xcuserdata
+**/*xcuserstate
 DerivedData/
 build/
 *.moved-aside
