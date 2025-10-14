@@ -1,0 +1,26 @@
+# Xcode
+**/*.xcworkspace
+**/*.xcuserdata
+**/*.xcuserstate
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Swift Package Manager
+.build/
+
+# Secretsファイル（BLE UUIDなど）
+Secrets.swift
+
+# 他に追加の秘密情報ファイル
+Config/

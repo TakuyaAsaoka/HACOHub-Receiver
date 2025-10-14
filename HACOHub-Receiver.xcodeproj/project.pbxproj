@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C9F24D6C2E9E555C006874FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = C9F24D6B2E9E5554006874FD /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C9F24D3C2E9D3C8B006874FD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,11 +31,25 @@
 		C9F24D2E2E9D3C89006874FD /* HACOHub-Receiver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HACOHub-Receiver.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9F24D3B2E9D3C8B006874FD /* HACOHub-ReceiverTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "HACOHub-ReceiverTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9F24D452E9D3C8B006874FD /* HACOHub-ReceiverUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "HACOHub-ReceiverUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9F24D6B2E9E5554006874FD /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C9F24D722E9E5747006874FD /* Exceptions for "HACOHub-Receiver" folder in "HACOHub-Receiver" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C9F24D2D2E9D3C88006874FD /* HACOHub-Receiver */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C9F24D302E9D3C89006874FD /* HACOHub-Receiver */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C9F24D722E9E5747006874FD /* Exceptions for "HACOHub-Receiver" folder in "HACOHub-Receiver" target */,
+			);
 			path = "HACOHub-Receiver";
 			sourceTree = "<group>";
 		};
@@ -43,6 +61,11 @@
 		C9F24D482E9D3C8B006874FD /* HACOHub-ReceiverUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "HACOHub-ReceiverUITests";
+			sourceTree = "<group>";
+		};
+		C9F24D6D2E9E55E3006874FD /* Config */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +98,8 @@
 		C9F24D252E9D3C88006874FD = {
 			isa = PBXGroup;
 			children = (
+				C9F24D6D2E9E55E3006874FD /* Config */,
+				C9F24D6B2E9E5554006874FD /* .gitignore */,
 				C9F24D302E9D3C89006874FD /* HACOHub-Receiver */,
 				C9F24D3E2E9D3C8B006874FD /* HACOHub-ReceiverTests */,
 				C9F24D482E9D3C8B006874FD /* HACOHub-ReceiverUITests */,
@@ -109,6 +134,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				C9F24D302E9D3C89006874FD /* HACOHub-Receiver */,
+				C9F24D6D2E9E55E3006874FD /* Config */,
 			);
 			name = "HACOHub-Receiver";
 			packageProductDependencies = (
@@ -212,6 +238,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9F24D6C2E9E555C006874FD /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +427,7 @@
 				DEVELOPMENT_TEAM = 4SH7X72UQ9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "HACOHub-Receiver/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -432,6 +460,7 @@
 				DEVELOPMENT_TEAM = 4SH7X72UQ9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "HACOHub-Receiver/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
