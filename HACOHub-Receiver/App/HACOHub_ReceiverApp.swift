@@ -11,7 +11,7 @@ import SwiftUI
 struct HACOHub_ReceiverApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
     }
 }

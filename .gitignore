@@ -23,4 +23,4 @@ Carthage/Build/
 Secrets.swift
 
 # 他に追加の秘密情報ファイル
-Config/
+**/Config/

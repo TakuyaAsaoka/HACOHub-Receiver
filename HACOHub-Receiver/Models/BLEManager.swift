@@ -10,16 +10,26 @@ import SwiftUI
 import Combine
 
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-  var centralManager: CBCentralManager!
   @Published var isSwitchedOn = false
   @Published var peripherals = [CBPeripheral]()
+  var centralManager: CBCentralManager!
+  var bleBaseUUID: CBUUID?
+  var data: Data = Data()
 
   override init() {
     super.init()
-    centralManager = CBCentralManager(delegate: self, queue: nil)
-    let bleBaseUUIDString = Bundle.main.object(forInfoDictionaryKey: "BLEBaseUUID") as? String ?? ""
-    let bleBaseUUID = CBUUID(string: bleBaseUUIDString)
+
+    #if targetEnvironment(simulator)
+    print("⚠️ Running on simulator — BLE not initialized")
+    #else
+    centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey: true])
+    if let bleBaseUUIDString = Bundle.main.object(forInfoDictionaryKey: "BLEBaseUUID") as? String {
+      bleBaseUUID = CBUUID(string: bleBaseUUIDString)
+    }
+    #endif
   }
+
+
 
   func centralManagerDidUpdateState(_ central: CBCentralManager) {
     if central.state == .poweredOn {
@@ -30,11 +40,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   }
 
   func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+    guard RSSI.intValue >= -50 else {
+      print("データ転送に十分な信号強度がないので接続できません。")
+      return
+    }
+
     if !peripherals.contains(peripheral) {
       peripherals.append(peripheral)
     }
   }
 
+  // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
   func startScanning() {
     print("Scanning...")
     centralManager.scanForPeripherals(withServices: nil, options: nil)
@@ -52,6 +68,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     print("Enter didConnect")
     // 意外とこれがないとサービスの登録がうまくいかなかった
     peripheral.delegate = self
+    // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
     peripheral.discoverServices(nil)
   }
 
@@ -59,7 +76,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     print("enter didDiscoverService")
     guard let services = peripheral.services else { return }
     for service in services {
-      peripheral.discoverCharacteristics([characteristicUUID], for: service)
+      if let bleBaseUUID = bleBaseUUID {
+        centralManager.scanForPeripherals(withServices: [bleBaseUUID], options: nil)
+      } else {
+        print("BLE Base UUIDが設定されていません")
+      }
     }
   }
 
@@ -76,8 +97,25 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
   func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
     print("enter didUpdateValue")
-    if let data = characteristic.value {
-      // ここでデータを処理
+
+    if let error = error {
+      print("Error discovering characteristics: \(error.localizedDescription)")
+//      cleanup()
+      return
+    }
+
+    guard let characteristicData = characteristic.value,
+          let stringFromData = String(data: characteristicData, encoding: .utf8) else {
+      return
+    }
+
+    print("Received \(characteristicData.count) bytes: \(stringFromData)")
+
+    if stringFromData == "EOM" {
+//      message = String(data: data, encoding: .utf8) ?? ""
+//      writeData()
+    } else {
+      data.append(characteristicData)
     }
     print(characteristic)
   }
