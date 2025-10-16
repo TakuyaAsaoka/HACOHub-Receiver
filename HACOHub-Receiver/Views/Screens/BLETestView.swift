@@ -10,10 +10,11 @@ import CoreBluetooth
 
 struct BLETestView: View {
   @StateObject private var bleManager = BLEManager()
+  @State private var connectedPeripheral: CBPeripheral? = nil
+  @State private var discoveredPeripherals: [PeripheralInfo] = []
 
   var body: some View {
     VStack(spacing: 16) {
-      // Bluetooth ON/OFF 状態表示
       HStack {
         Circle()
           .fill(bleManager.isSwitchedOn ? Color.green : Color.red)
@@ -23,10 +24,28 @@ struct BLETestView: View {
       }
       .padding()
 
-      // スキャンボタン
-      Button(action: {
+      if let connected = connectedPeripheral {
+        VStack(alignment: .leading, spacing: 4) {
+          Text("🟢 接続中のデバイス")
+            .font(.title3)
+            .bold()
+          Text("名前: \(connected.name ?? "名前なし")")
+          Text("UUID: \(connected.identifier.uuidString)")
+            .font(.caption)
+            .foregroundColor(.gray)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.green.opacity(0.1))
+        .cornerRadius(12)
+        .padding(.horizontal)
+      }
+
+      Button {
+        bleManager.weekPeripheralInfos.removeAll()
+        bleManager.peripheralInfos.removeAll()
         bleManager.startScanning()
-      }) {
+      } label: {
         Text("スキャン開始")
           .frame(maxWidth: .infinity)
           .padding()
@@ -36,24 +55,24 @@ struct BLETestView: View {
       }
       .disabled(!bleManager.isSwitchedOn)
 
-      // 検出デバイス一覧
-      List(bleManager.peripherals, id: \.identifier) { peripheral in
-        Button(action: {
-          bleManager.connectPeripheral(peripheral: peripheral)
-        }) {
-          VStack(alignment: .leading) {
-            Text(peripheral.name ?? "名前なしデバイス")
-              .font(.headline)
-            Text("UUID: \(peripheral.identifier.uuidString)")
-              .font(.caption)
-              .foregroundColor(.gray)
+      if !bleManager.peripheralInfos.isEmpty {
+        SectionView(
+          title: "接続可能デバイス",
+          peripheralInfos: bleManager.peripheralInfos,
+          disabled: false,
+          onSelect: { info in
+            bleManager.connectPeripheral(peripheral: info.peripheral)
           }
-        }
-
-        Spacer()
+        )
       }
-      .padding()
-      .navigationTitle("BLEテストビュー")
+
+      if !bleManager.weekPeripheralInfos.isEmpty {
+        SectionView(
+          title: "信号が弱く接続できないデバイス",
+          peripheralInfos: bleManager.weekPeripheralInfos,
+          disabled: true
+        )
+      }
     }
   }
 }

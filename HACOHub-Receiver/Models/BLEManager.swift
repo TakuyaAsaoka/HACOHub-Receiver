@@ -11,8 +11,8 @@ import Combine
 
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
   @Published var isSwitchedOn = false
-  @Published var allPeripherals = [CBPeripheral]()
-  @Published var peripherals = [CBPeripheral]()
+  @Published var weekPeripheralInfos = [PeripheralInfo]()
+  @Published var peripheralInfos = [PeripheralInfo]()
   var centralManager: CBCentralManager!
   var bleBaseUUID: CBUUID?
   var data: Data = Data()
@@ -48,20 +48,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
     let deviceName = peripheral.name ?? "名前なしデバイス"
     let uuidString = peripheral.identifier.uuidString
-
-    if !allPeripherals.contains(peripheral) {
-      allPeripherals.append(peripheral)
-      print("BLEデバイスNo: \(allPeripherals.count)")
-    }
+    let peripheral = PeripheralInfo(peripheral: peripheral, rssi: RSSI)
 
     if RSSI.intValue >= -50 {
-      print("接続可能: \(deviceName), UUID: \(uuidString), RSSI: \(RSSI)")
-
-      if !peripherals.contains(peripheral) {
-        peripherals.append(peripheral)
+      if !peripheralInfos.contains(where: { $0.id == peripheral.peripheral.identifier }) {
+        print("BLEデバイスNo: \(peripheralInfos.count)")
+        print("接続可能: \(deviceName), UUID: \(uuidString), RSSI: \(RSSI)")
+        peripheralInfos.append(peripheral)
       }
     } else {
-      print("接続不可（信号弱）: \(deviceName), UUID: \(uuidString), RSSI: \(RSSI)")
+      if !weekPeripheralInfos.contains(where: { $0.id == peripheral.peripheral.identifier }) {
+        print("BLEデバイスNo: \(weekPeripheralInfos.count)")
+        print("接続不可（信号弱）: \(deviceName), UUID: \(uuidString), RSSI: \(RSSI)")
+        weekPeripheralInfos.append(peripheral)
+      }
     }
   }
 
@@ -73,17 +73,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   }
 
   func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-    print("Enter didConnect")
+    print("✅ 接続成功: \(peripheral.name ?? "名前なし"), UUID: \(peripheral.identifier.uuidString)")
     // 意外とこれがないとサービスの登録がうまくいかなかった
     peripheral.delegate = self
     // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
     peripheral.discoverServices(nil)
   }
 
+  func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+    print("❌ 接続失敗: \(peripheral.name ?? "名前なし"), UUID: \(peripheral.identifier.uuidString), error: \(error?.localizedDescription ?? "なし")")
+  }
+
   func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
     print("enter didDiscoverService")
+    print("peripheral.services.count: \(peripheral.services?.count ?? 0)")
     guard let services = peripheral.services else { return }
     for service in services {
+      print("service: \(service)")
       if let bleBaseUUID = bleBaseUUID {
         centralManager.scanForPeripherals(withServices: [bleBaseUUID], options: nil)
       } else {
