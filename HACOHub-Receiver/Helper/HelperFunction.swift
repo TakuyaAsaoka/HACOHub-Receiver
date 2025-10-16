@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreBluetooth
 
 func getRGBColor(_ r: Int, _ g: Int, _ b: Int, _ a: Double = 1) -> Color {
   Color(.sRGB,
@@ -16,27 +17,19 @@ func getRGBColor(_ r: Int, _ g: Int, _ b: Int, _ a: Double = 1) -> Color {
   )
 }
 
-func getColumns(n: Int, spacing: CGFloat) -> [GridItem] {
-  guard n > 0 else { return [] }
-
-  return (0..<n).map { index in
-    GridItem(
-      .flexible(),
-      spacing: index == n - 1 ? 0 : spacing
-    )
+func uuidWithAlias(alias: UInt16) -> CBUUID? {
+  guard let baseUUID = Bundle.main.object(forInfoDictionaryKey: "BLEBaseUUID") as? String else {
+    print("⚠️ BLEBaseUUID が Info.plist に設定されていません")
+    return nil
   }
-}
 
-func fromDateToFormattedDate(date: Date, format: String = "a hh:mm") -> String {
-  let formatter = DateFormatter()
-  formatter.dateFormat = format
-  formatter.locale = Locale(identifier: "en_US_POSIX")
-  return formatter.string(from: date)
-}
+  let aliasHex = String(format: "%04X", alias)
+  var chars = Array(baseUUID)
 
-func fromDateToFullDate(date: Date, format: String = "MMMM dd, yyyy a hh:mm") -> String {
-  let formatter = DateFormatter()
-  formatter.dateFormat = format
-  formatter.locale = Locale(identifier: "en_US_POSIX")
-  return formatter.string(from: date)
+  for i in 0..<aliasHex.count {
+    chars[4 + i] = Array(aliasHex)[i]
+  }
+
+  let newUUIDString = String(chars)
+  return CBUUID(string: newUUIDString)
 }

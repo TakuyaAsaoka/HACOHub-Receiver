@@ -79,62 +79,76 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
     // 意外とこれがないとサービスの登録がうまくいかなかった
     peripheral.delegate = self
-    // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
     peripheral.discoverServices(nil)
   }
 
+  // 接続失敗時に呼ばれる
   func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
     print("❌ 接続失敗: \(peripheral.name ?? "名前なし"), UUID: \(peripheral.identifier.uuidString), error: \(error?.localizedDescription ?? "なし")")
   }
 
+  // Service探索完了後に呼ばれる
   func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
     print("enter didDiscoverService")
     print("peripheral.services.count: \(peripheral.services?.count ?? 0)")
     guard let services = peripheral.services else { return }
+
+    guard let settingServiceUUID = uuidWithAlias(alias: 0x0100) else { return }
+    guard let deviceNumberUUID = uuidWithAlias(alias: 0x0101) else { return }
+
     for service in services {
       print("service: \(service)")
-      if let bleBaseUUID = bleBaseUUID {
-        centralManager.scanForPeripherals(withServices: [bleBaseUUID], options: nil)
+      if service.uuid == settingServiceUUID {
+        print("Setting Service を発見")
+        peripheral.discoverCharacteristics([deviceNumberUUID], for: service)
       } else {
         print("BLE Base UUIDが設定されていません")
       }
     }
   }
 
+  // Characteristic探索完了後に呼ばれる
   func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
     print("enter didDiscoevrCharacteristics")
     print(service)
     guard let characteristics = service.characteristics else { return }
+
+    let deviceNumberUUID = uuidWithAlias(alias: 0x0101)
+
     for characteristic in characteristics {
-      if characteristic.properties.contains(.notify) {
-        peripheral.setNotifyValue(true, for: characteristic)
+      if characteristic.uuid == deviceNumberUUID {
+        print("DEVICE_NUMBER キャラクタリスティックを発見")
+
+        // 送信データを作成（8文字以下を0x00埋め）
+        let name = "HACOHub1" // デバイス名
+        var data = name.data(using: .utf8) ?? Data()
+        if data.count < 8 {
+          data.append(contentsOf: Array(repeating: 0x00, count: 8 - data.count))
+        }
+
+        // 書き込み
+        peripheral.writeValue(data, for: characteristic, type: .withResponse)
+
+        // 読み込み
+        peripheral.readValue(for: characteristic)
       }
     }
   }
 
   func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-    print("enter didUpdateValue")
-
     if let error = error {
-      print("Error discovering characteristics: \(error.localizedDescription)")
-//      cleanup()
+      print("読み取りエラー: \(error.localizedDescription)")
       return
     }
 
-    guard let characteristicData = characteristic.value,
-          let stringFromData = String(data: characteristicData, encoding: .utf8) else {
-      return
-    }
+    guard let data = characteristic.value else { return }
 
-    print("Received \(characteristicData.count) bytes: \(stringFromData)")
-
-    if stringFromData == "EOM" {
-//      message = String(data: data, encoding: .utf8) ?? ""
-//      writeData()
+    // データを文字列に変換（UTF-8の場合）
+    if let stringValue = String(data: data, encoding: .utf8) {
+      print("読み取り成功: \(stringValue)")
     } else {
-      data.append(characteristicData)
+      print("読み取り成功、バイナリ: \(data)")
     }
-    print(characteristic)
   }
 
   // 切断時に呼ばれる処理
@@ -151,6 +165,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
     if let index = weekPeripheralInfos.firstIndex(where: { $0.peripheral == peripheral }) {
       weekPeripheralInfos[index].isConnected = false
+    }
+  }
+
+  // 書き込み完了
+  func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+    if let error = error {
+      print("書き込み失敗: \(error.localizedDescription)")
+    } else {
+      print("書き込み成功: \(characteristic.uuid)")
     }
   }
 }
