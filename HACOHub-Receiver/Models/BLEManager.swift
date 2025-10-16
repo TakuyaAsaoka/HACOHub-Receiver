@@ -11,6 +11,7 @@ import Combine
 
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
   @Published var isSwitchedOn = false
+  @Published var allPeripherals = [CBPeripheral]()
   @Published var peripherals = [CBPeripheral]()
   var centralManager: CBCentralManager!
   var bleBaseUUID: CBUUID?
@@ -37,22 +38,31 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
   }
 
-  func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-    guard RSSI.intValue >= -50 else {
-      print("データ転送に十分な信号強度がないので接続できません。")
-      return
-    }
-
-    if !peripherals.contains(peripheral) {
-      peripherals.append(peripheral)
-    }
-  }
-
   // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
   func startScanning() {
-    print("Scanning...")
+    print("BLEスキャンを開始")
     centralManager.scanForPeripherals(withServices: nil, options: nil)
-    print(peripherals)
+  }
+
+  // スキャン中、BLEデバイスを見つけるごとに呼ばれる関数
+  func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+    let deviceName = peripheral.name ?? "名前なしデバイス"
+    let uuidString = peripheral.identifier.uuidString
+
+    if !allPeripherals.contains(peripheral) {
+      allPeripherals.append(peripheral)
+      print("BLEデバイスNo: \(allPeripherals.count)")
+    }
+
+    if RSSI.intValue >= -50 {
+      print("接続可能: \(deviceName), UUID: \(uuidString), RSSI: \(RSSI)")
+
+      if !peripherals.contains(peripheral) {
+        peripherals.append(peripheral)
+      }
+    } else {
+      print("接続不可（信号弱）: \(deviceName), UUID: \(uuidString), RSSI: \(RSSI)")
+    }
   }
 
   func connectPeripheral(peripheral: CBPeripheral) {
