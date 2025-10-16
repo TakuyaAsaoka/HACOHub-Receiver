@@ -54,10 +54,11 @@ struct SectionView: View {
               }
             }
             .padding()
-            .background(disabled ? Color.gray.opacity(0.1) : Color.white)
+            .background(info.isConnected ? Color.green.opacity(0.2) : (disabled ? Color.gray.opacity(0.1) : Color.white))
             .cornerRadius(12)
             .shadow(radius: 1)
             .padding(.horizontal)
+            .animation(.easeInOut(duration: 0.3), value: info.isConnected)
           }
           .disabled(disabled)
         }

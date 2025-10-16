@@ -74,6 +74,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
   func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
     print("✅ 接続成功: \(peripheral.name ?? "名前なし"), UUID: \(peripheral.identifier.uuidString)")
+    if let index = peripheralInfos.firstIndex(where: { $0.peripheral == peripheral }) {
+      peripheralInfos[index].isConnected = true
+    }
     // 意外とこれがないとサービスの登録がうまくいかなかった
     peripheral.delegate = self
     // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
@@ -132,6 +135,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
       data.append(characteristicData)
     }
     print(characteristic)
+  }
+
+  // 切断時に呼ばれる処理
+  func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+    if let error = error {
+      print("❌ 切断（エラーあり）: \(peripheral.name ?? "Unknown"), UUID: \(peripheral.identifier.uuidString), error: \(error.localizedDescription)")
+    } else {
+      print("⚠️ 切断（エラーなし）: \(peripheral.name ?? "Unknown"), UUID: \(peripheral.identifier.uuidString)")
+    }
+
+    // 状態更新
+    if let index = peripheralInfos.firstIndex(where: { $0.peripheral == peripheral }) {
+      peripheralInfos[index].isConnected = false
+    }
+    if let index = weekPeripheralInfos.firstIndex(where: { $0.peripheral == peripheral }) {
+      weekPeripheralInfos[index].isConnected = false
+    }
   }
 }
 
