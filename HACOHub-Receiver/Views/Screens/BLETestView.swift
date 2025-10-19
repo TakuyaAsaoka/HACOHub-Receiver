@@ -42,8 +42,6 @@ struct BLETestView: View {
       }
 
       Button {
-        bleManager.weekPeripheralInfos.removeAll()
-        bleManager.peripheralInfos.removeAll()
         bleManager.startScanning()
       } label: {
         Text("スキャン開始")

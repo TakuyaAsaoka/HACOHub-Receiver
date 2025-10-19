@@ -41,10 +41,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
   func startScanning() {
     print("BLEスキャンを開始")
+    weekPeripheralInfos.removeAll()
+    peripheralInfos.removeAll()
     centralManager.scanForPeripherals(withServices: nil, options: nil)
   }
 
-  // スキャン中、BLEデバイスを見つけるごとに呼ばれる関数
+  // スキャン中、BLEデバイスを見つけるたびに呼ばれる関数
   func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
     let deviceName = peripheral.name ?? "名前なしデバイス"
     let uuidString = peripheral.identifier.uuidString
@@ -66,15 +68,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   }
 
   func connectPeripheral(peripheral: CBPeripheral) {
-    print("Connect peripheral")
-    print(peripheral)
+    print("Connect peripheral: \(peripheral.name ?? "名前なし")")
     centralManager.stopScan()
     centralManager.connect(peripheral, options: nil)
   }
 
+  func disconnectPeripheral(peripheral: CBPeripheral) {
+    print("Disconnecting from: \(peripheral.name ?? "名前なし")")
+    centralManager.cancelPeripheralConnection(peripheral)
+  }
+
   func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
     print("✅ 接続成功: \(peripheral.name ?? "名前なし"), UUID: \(peripheral.identifier.uuidString)")
-    if let index = peripheralInfos.firstIndex(where: { $0.peripheral == peripheral }) {
+    if let index = peripheralInfos.firstIndex(where: { $0.peripheral.identifier == peripheral.identifier }) {
       peripheralInfos[index].isConnected = true
     }
     // 意外とこれがないとサービスの登録がうまくいかなかった
@@ -85,54 +91,24 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   // 接続失敗時に呼ばれる
   func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
     print("❌ 接続失敗: \(peripheral.name ?? "名前なし"), UUID: \(peripheral.identifier.uuidString), error: \(error?.localizedDescription ?? "なし")")
+    if let index = peripheralInfos.firstIndex(where: { $0.peripheral.identifier == peripheral.identifier }) {
+      peripheralInfos[index].isConnected = false
+    }
   }
 
   // Service探索完了後に呼ばれる
   func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
     print("enter didDiscoverService")
-    print("peripheral.services.count: \(peripheral.services?.count ?? 0)")
     guard let services = peripheral.services else { return }
 
-    guard let settingServiceUUID = uuidWithAlias(alias: 0x0100) else { return }
-    guard let deviceNumberUUID = uuidWithAlias(alias: 0x0101) else { return }
-
-    for service in services {
-      print("service: \(service)")
-      if service.uuid == settingServiceUUID {
-        print("Setting Service を発見")
-        peripheral.discoverCharacteristics([deviceNumberUUID], for: service)
-      } else {
-        print("BLE Base UUIDが設定されていません")
-      }
-    }
+    for service in services { peripheral.discoverCharacteristics(nil, for: service) }
   }
 
   // Characteristic探索完了後に呼ばれる
   func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
     print("enter didDiscoevrCharacteristics")
-    print(service)
     guard let characteristics = service.characteristics else { return }
-
-    let deviceNumberUUID = uuidWithAlias(alias: 0x0101)
-
-    for characteristic in characteristics {
-      if characteristic.uuid == deviceNumberUUID {
-        print("DEVICE_NUMBER キャラクタリスティックを発見")
-
-        // 送信データを作成（8文字以下を0x00埋め）
-        let name = "HACOHub1" // デバイス名
-        var data = name.data(using: .utf8) ?? Data()
-        if data.count < 8 {
-          data.append(contentsOf: Array(repeating: 0x00, count: 8 - data.count))
-        }
-
-        // 書き込み
-        peripheral.writeValue(data, for: characteristic, type: .withResponse)
-
-        // 読み込み
-        peripheral.readValue(for: characteristic)
-      }
-    }
+    for characteristic in characteristics { print("キャラ発見: \(characteristic)") }
   }
 
   func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -160,15 +136,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
 
     // 状態更新
-    if let index = peripheralInfos.firstIndex(where: { $0.peripheral == peripheral }) {
+    if let index = peripheralInfos.firstIndex(where: { $0.peripheral.identifier == peripheral.identifier }) {
       peripheralInfos[index].isConnected = false
     }
-    if let index = weekPeripheralInfos.firstIndex(where: { $0.peripheral == peripheral }) {
+    if let index = weekPeripheralInfos.firstIndex(where: { $0.peripheral.identifier == peripheral.identifier }) {
       weekPeripheralInfos[index].isConnected = false
     }
   }
 
-  // 書き込み完了
+  // 書き込み処理後に呼ばれる
   func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
     if let error = error {
       print("書き込み失敗: \(error.localizedDescription)")
@@ -176,5 +152,62 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
       print("書き込み成功: \(characteristic.uuid)")
     }
   }
+
+  private func findCharacteristic(peripheral: CBPeripheral, serviceUUID: CBUUID, characteristicUUID: CBUUID) -> CBCharacteristic? {
+    guard let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }),
+          let characteristics = service.characteristics else { return nil }
+
+    return characteristics.first(where: { $0.uuid == characteristicUUID })
+  }
+
+  private func unlockDevice(_ peripheral: CBPeripheral) {
+    print("🔓 開錠操作実行: \(peripheral.name ?? "Unknown")")
+    guard let serviceUUID: CBUUID = uuidWithAlias(alias: 0x0200) else { return }
+    guard let characteristicUUID: CBUUID = uuidWithAlias(alias: 0x0201) else { return }
+    guard let characteristic = findCharacteristic(
+      peripheral: peripheral,
+      serviceUUID: serviceUUID,
+      characteristicUUID: characteristicUUID
+    ) else {
+      print("❌ 書き込み先キャラなし")
+      return
+    }
+
+    let opeCode: [UInt8] = [0x12, 0x34, 0x56] // パスワードが123456の意味
+    let afterAction: UInt8 = 0x00
+    let autolockTime: [UInt8] = [0x00, 0x00]
+
+    var data = Data()
+    data.append(contentsOf: opeCode)
+    data.append(afterAction)
+    data.append(contentsOf: autolockTime)
+
+    peripheral.writeValue(data, for: characteristic, type: .withResponse)
+  }
+
+  func renameDevice(_ peripheral: CBPeripheral, newName: String) {
+    print("✏️ 名前変更: \(newName)")
+    guard let serviceUUID: CBUUID = uuidWithAlias(alias: 0x0100) else { return }
+    guard let characteristicUUID: CBUUID = uuidWithAlias(alias: 0x0101) else { return }
+    guard let characteristic = findCharacteristic(
+      peripheral: peripheral,
+      serviceUUID: serviceUUID,
+      characteristicUUID: characteristicUUID)
+    else {
+      print("❌ 書き込みキャラなし")
+      return
+    }
+
+    var data = newName.data(using: .utf8) ?? Data()
+    if data.count < 8 {
+      data.append(contentsOf: Array(repeating: 0x00, count: 8 - data.count))
+    } else if data.count > 8 {
+      data = data.subdata(in: 0..<8)
+    }
+
+    peripheral.writeValue(data, for: characteristic, type: .withResponse)
+  }
+
+
 }
 
