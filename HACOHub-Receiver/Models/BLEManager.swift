@@ -41,8 +41,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   // TODO: 会場だと違う機器に繋いでしまうかも。ある程度指定しておきたい。
   func startScanning() {
     print("BLEスキャンを開始")
+
+    let connectedDevices = peripheralInfos.filter { $0.isConnected }
+    for info in connectedDevices {
+      centralManager.cancelPeripheralConnection(info.peripheral)
+    }
+
     weekPeripheralInfos.removeAll()
     peripheralInfos.removeAll()
+    
     centralManager.scanForPeripherals(withServices: nil, options: nil)
   }
 
@@ -160,7 +167,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     return characteristics.first(where: { $0.uuid == characteristicUUID })
   }
 
-  private func unlockDevice(_ peripheral: CBPeripheral) {
+  func unlockDevice(_ peripheral: CBPeripheral) {
     print("🔓 開錠操作実行: \(peripheral.name ?? "Unknown")")
     guard let serviceUUID: CBUUID = uuidWithAlias(alias: 0x0200) else { return }
     guard let characteristicUUID: CBUUID = uuidWithAlias(alias: 0x0201) else { return }
@@ -208,6 +215,31 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     peripheral.writeValue(data, for: characteristic, type: .withResponse)
   }
 
+  func registerDevice(_ peripheral: CBPeripheral) {
+    print("🔍 登録: \(peripheral.name ?? "Unknown")")
+    guard let serviceUUID: CBUUID = uuidWithAlias(alias: 0x0100) else { return }
+    guard let characteristicUUID: CBUUID = uuidWithAlias(alias: 0x106) else { return }
+    guard let characteristic = findCharacteristic(
+      peripheral: peripheral,
+      serviceUUID: serviceUUID,
+      characteristicUUID: characteristicUUID)
+    else {
+      print("❌ 書き込みキャラなし")
+      return
+    }
 
+    // Registerに書き込む値
+    let value: UInt32 = 0x6B59AC
+
+    // UInt32を3バイトに分解してDataに変換
+    var bytes: [UInt8] = [
+      UInt8((value >> 16) & 0xFF),
+      UInt8((value >> 8) & 0xFF),
+      UInt8(value & 0xFF)
+    ]
+
+    let data = Data(bytes)
+    peripheral.writeValue(data, for: characteristic, type: .withResponse)
+  }
 }
 
