@@ -21,6 +21,7 @@ struct BaseLayout<Content: View>: View {
 
       VStack(spacing: 0) {
         Header()
+          .frame(height: 70)
 
         ZStack {
           Image("HACOHubBackgroundLogo")

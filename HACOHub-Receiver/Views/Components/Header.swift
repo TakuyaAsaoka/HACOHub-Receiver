@@ -33,7 +33,6 @@ struct Header: View {
       .padding(.leading, 32)
     }
     .ignoresSafeArea()
-    .frame(height: 100)
     .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
     .shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 4)
   }
