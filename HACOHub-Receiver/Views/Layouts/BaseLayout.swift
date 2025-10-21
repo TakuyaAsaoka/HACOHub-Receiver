@@ -17,11 +17,10 @@ struct BaseLayout<Content: View>: View {
   var body: some View {
     ZStack {
       getRGBColor(19, 20, 38)
-        .ignoresSafeArea()
 
       VStack(spacing: 0) {
         Header()
-          .frame(height: 70)
+          .frame(height: 100)
 
         ZStack {
           Image("HACOHubBackgroundLogo")
@@ -32,8 +31,11 @@ struct BaseLayout<Content: View>: View {
           content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
+        .padding(.top, 56)
+        .padding(.bottom, 26)
       }
     }
+    .ignoresSafeArea()
   }
 }
 
