@@ -13,6 +13,7 @@ struct QRFrameView: View {
   let cornerLength: CGFloat = 64
   let borderLineWidth: CGFloat = 4
   let whiteLineWidth: CGFloat = 8
+  @State private var scanPosition: CGFloat = 0
 
   var body: some View {
     ZStack {
@@ -27,6 +28,36 @@ struct QRFrameView: View {
         lineWidth: whiteLineWidth,
         borderLineWidth: borderLineWidth
       )
+    }
+
+    ZStack {
+      // 尾（線の後ろ）
+      LinearGradient(
+        gradient: Gradient(stops: [
+          .init(color: getRGBColor(79, 190, 159).opacity(0.0), location: 0.0),
+          .init(color: getRGBColor(79, 190, 159).opacity(0.2), location: 0.3),
+          .init(color: getRGBColor(79, 190, 159).opacity(0.4), location: 0.6),
+          .init(color: getRGBColor(79, 190, 159).opacity(0.6), location: 1.0)
+        ]),
+        startPoint: .top,   // 上から下に尾
+        endPoint: .bottom
+      )
+      .frame(width: size - borderLineWidth*2, height: 64)
+      .offset(y: scanPosition - size/2 - 64/2) // 尾が線の上に来るように調整
+
+      // メインの線（先端）
+      Rectangle()
+        .fill(getRGBColor(79, 190, 159))
+        .frame(width: size - borderLineWidth*2, height: 4)
+        .offset(y: scanPosition - size/2)
+    }
+    .onAppear {
+      withAnimation(
+        Animation.linear(duration: 2)
+          .repeatForever(autoreverses: false)
+      ) {
+        scanPosition = size
+      }
     }
   }
 }
