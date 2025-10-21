@@ -59,6 +59,8 @@ struct QRFrameView: View {
         scanPosition = size
       }
     }
+    .frame(width: size, height: size)
+    .clipped()
   }
 }
 
