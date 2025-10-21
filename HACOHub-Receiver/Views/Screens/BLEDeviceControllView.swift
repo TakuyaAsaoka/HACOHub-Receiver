@@ -10,10 +10,9 @@ import CoreBluetooth
 
 struct BLEDeviceControllView: View {
   @StateObject private var bleManager = BLEManager()
-  @State private var isShowingQRScan = false
+  @State private var isShowingHomeView = false
   @State private var connectedPeripheral: CBPeripheral? = nil
   @State private var discoveredPeripherals: [PeripheralInfo] = []
-  @State private var qrCodeValue: String = ""
 
   var body: some View {
     VStack(spacing: 16) {
@@ -40,7 +39,7 @@ struct BLEDeviceControllView: View {
         .disabled(!bleManager.isSwitchedOn)
 
         Button {
-          isShowingQRScan = true
+          isShowingHomeView = true
         } label: {
           Label("QRコード読み取り", systemImage: "qrcode.viewfinder")
             .frame(maxWidth: .infinity)
@@ -79,39 +78,10 @@ struct BLEDeviceControllView: View {
         }
       }
     }
-    .navigationDestination(isPresented: $isShowingQRScan) {
-      QRScanView(qrCodeValue: $qrCodeValue, onQRCodeDetected: { value in
-        print("QRコード読み取り: \(value)")
-        qrCodeValue = value
-
-        // BLEデバイスを開錠
-        var deviceFound = false
-        let components = qrCodeValue.split(separator: "-")
-        let deviceName = String(components[0])
-        let password = String(components[1])
-
-        print("検出されたデバイス名: \(deviceName)")
-        print("検出されたパスワード: \(password)")
-
-        for info in bleManager.peripheralInfos {
-          if info.peripheral.name == deviceName {
-            deviceFound = true
-
-            if password == "123456" {
-              bleManager.unlockDevice(info.peripheral)
-            } else {
-              print("パスワードが違います")
-            }
-          }
-        }
-
-        if !deviceFound {
-          print("⚠️ 接続中のデバイスに操作対象のデバイスが見つかりませんでした: \(deviceName)")
-        }
-      })
-      .frame(width: 888, height: 500)
-      .navigationBarBackButtonHidden(true)
-      .toolbar(.hidden)
+    .navigationDestination(isPresented: $isShowingHomeView) {
+      HomeView(bleManager: bleManager)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden)
     }
   }
 }
