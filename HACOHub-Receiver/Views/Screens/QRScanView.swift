@@ -57,9 +57,8 @@ struct QRScanView: UIViewControllerRepresentable {
       }
     }
 
-//    let overlay = createStylishOverlay(frame: controller.view.bounds)
-//
-//    controller.view.addSubview(overlay)
+    let overlay = createStylishOverlay(frame: controller.view.bounds)
+    controller.view.addSubview(overlay)
 
     // これで位置がずらせる
 //    DispatchQueue.main.async {
@@ -83,47 +82,106 @@ struct QRScanView: UIViewControllerRepresentable {
     let overlayView = UIView(frame: frame)
 
     // スキャン枠のサイズ
+    let scanSize: CGFloat = 376
+
+    // 画面中央に配置
     let scanRect = CGRect(
-      x: frame.width * 0.15,
-      y: frame.height * 0.25,
-      width: frame.width * 0.7,
-      height: frame.height * 0.4
+      x: (frame.width - scanSize) / 2,
+      y: (frame.height - scanSize) / 2,
+      width: scanSize,
+      height: scanSize
     )
 
-    // RGB指定でカラーを定義
+    // === RGB指定でカラーを定義 ===
     let borderColor = UIColor(red: 79/255, green: 190/255, blue: 159/255, alpha: 1)
-    let cornerLength: CGFloat = 30
-    let cornerRadius: CGFloat = 8
-    let lineWidth: CGFloat = 4
 
-    // 枠線（外枠）
+    // === パラメータ ===
+    let cornerLength: CGFloat = 64
+    let cornerRadius: CGFloat = 8
+    let borderLineWidth: CGFloat = 4
+    let cornerLineWidth: CGFloat = 8
+
+    // === 緑の外枠 ===
     let borderLayer = CAShapeLayer()
     borderLayer.path = UIBezierPath(roundedRect: scanRect, cornerRadius: cornerRadius).cgPath
     borderLayer.strokeColor = borderColor.cgColor
     borderLayer.fillColor = UIColor.clear.cgColor
-    borderLayer.lineWidth = 8
+    borderLayer.lineWidth = borderLineWidth
     overlayView.layer.addSublayer(borderLayer)
 
-    // 四隅の白い角線
-    func addCorner(x: CGFloat, y: CGFloat, horizontal: Bool, vertical: Bool) {
-      let cornerLayer = CAShapeLayer()
-      let path = UIBezierPath(roundedRect: CGRect(x: x, y: y, width: cornerLength, height: lineWidth), cornerRadius: cornerRadius)
-      cornerLayer.path = path.cgPath
-      cornerLayer.fillColor = UIColor.white.cgColor
-      overlayView.layer.addSublayer(cornerLayer)
+    enum CornerPosition {
+      case topLeft, topRight, bottomLeft, bottomRight
+    }
 
-      let verticalLayer = CAShapeLayer()
-      let path2 = UIBezierPath(roundedRect: CGRect(x: x, y: y, width: lineWidth, height: cornerLength), cornerRadius: cornerRadius)
-      verticalLayer.path = path2.cgPath
-      verticalLayer.fillColor = UIColor.white.cgColor
-      overlayView.layer.addSublayer(verticalLayer)
+    // === 四隅の白い角線 ===
+    func addCorner(x: CGFloat, y: CGFloat, position: CornerPosition) {
+      let cornerLayer = CAShapeLayer()
+      let path = UIBezierPath()
+
+      // 緑枠線の太さと白線太さ
+      let borderLineWidth: CGFloat = 4
+      let cornerLineWidth: CGFloat = 8
+      let offset = (cornerLineWidth - borderLineWidth) / 2
+
+      switch position {
+      case .topLeft:
+        let startX = x + offset
+        let startY = y + offset
+        path.move(to: CGPoint(x: startX + cornerRadius, y: startY))
+        path.addLine(to: CGPoint(x: startX + cornerLength, y: startY))
+        path.addArc(withCenter: CGPoint(x: startX + cornerRadius, y: startY + cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: CGFloat(3*Double.pi/2),
+                    endAngle: CGFloat(Double.pi),
+                    clockwise: false)
+        path.addLine(to: CGPoint(x: startX, y: startY + cornerLength))
+      case .topRight:
+        let startX = x - offset
+        let startY = y + offset
+        path.move(to: CGPoint(x: startX - cornerRadius, y: startY))
+        path.addLine(to: CGPoint(x: startX - cornerLength, y: startY))
+        path.addArc(withCenter: CGPoint(x: startX - cornerRadius, y: startY + cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: CGFloat(3*Double.pi/2),
+                    endAngle: 0,
+                    clockwise: true)
+        path.addLine(to: CGPoint(x: startX, y: startY + cornerLength))
+      case .bottomLeft:
+        let startX = x + offset
+        let startY = y - offset
+        path.move(to: CGPoint(x: startX + cornerRadius, y: startY))
+        path.addLine(to: CGPoint(x: startX + cornerLength, y: startY))
+        path.addArc(withCenter: CGPoint(x: startX + cornerRadius, y: startY - cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: CGFloat(Double.pi/2),
+                    endAngle: CGFloat(Double.pi),
+                    clockwise: true)
+        path.addLine(to: CGPoint(x: startX, y: startY - cornerLength))
+      case .bottomRight:
+        let startX = x - offset
+        let startY = y - offset
+        path.move(to: CGPoint(x: startX - cornerRadius, y: startY))
+        path.addLine(to: CGPoint(x: startX - cornerLength, y: startY))
+        path.addArc(withCenter: CGPoint(x: startX - cornerRadius, y: startY - cornerRadius),
+                    radius: cornerRadius,
+                    startAngle: CGFloat(Double.pi/2),
+                    endAngle: 0,
+                    clockwise: false)
+        path.addLine(to: CGPoint(x: startX, y: startY - cornerLength))
+      }
+
+      cornerLayer.path = path.cgPath
+      cornerLayer.strokeColor = UIColor.white.cgColor
+      cornerLayer.fillColor = UIColor.clear.cgColor
+      cornerLayer.lineWidth = cornerLineWidth
+      overlayView.layer.addSublayer(cornerLayer)
     }
 
     // 四隅それぞれに描画
-    addCorner(x: scanRect.minX, y: scanRect.minY, horizontal: true, vertical: true) // 左上
-    addCorner(x: scanRect.maxX - cornerLength, y: scanRect.minY, horizontal: false, vertical: true) // 右上
-    addCorner(x: scanRect.minX, y: scanRect.maxY - cornerLength, horizontal: true, vertical: false) // 左下
-    addCorner(x: scanRect.maxX - cornerLength, y: scanRect.maxY - cornerLength, horizontal: false, vertical: false) // 右下
+    addCorner(x: scanRect.minX, y: scanRect.minY, position: .topLeft)       // 左上
+    addCorner(x: scanRect.maxX, y: scanRect.minY, position: .topRight)      // 右上
+    addCorner(x: scanRect.minX, y: scanRect.maxY, position: .bottomLeft)    // 左下
+    addCorner(x: scanRect.maxX, y: scanRect.maxY, position: .bottomRight)   // 右下
 
     return overlayView
   }
