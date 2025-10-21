@@ -59,7 +59,7 @@ struct RoundedCornerOverlay: View {
       .rotationEffect(rotation)
       .offset(
         x: (rotation == .degrees(90) || rotation == .degrees(180) ? (borderLineWidth/2 - lineWidth/2) : (lineWidth/2 - borderLineWidth/2)),
-        y: (rotation == .degrees(180) || rotation == .degrees(270) ? (lineWidth/2 - borderLineWidth/2) : (lineWidth/2 - borderLineWidth/2))
+        y: (rotation == .degrees(180) || rotation == .degrees(270) ? (borderLineWidth/2 - lineWidth/2) : (lineWidth/2 - borderLineWidth/2))
 
       )
   }
