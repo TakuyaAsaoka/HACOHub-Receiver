@@ -1,7 +1,8 @@
 # Xcode
-**/*xcworkspace
-**/*xcuserdata
-**/*xcuserstate
+**/*xcworkspace/
+**/*xcuserdata/
+**/*xcuserstate/
+**/*pbxproj
 DerivedData/
 build/
 *.moved-aside
@@ -9,6 +10,9 @@ build/
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Mac
+**/.DS_Store
 
 # CocoaPods
 Pods/
@@ -20,7 +24,7 @@ Carthage/Build/
 .build/
 
 # Secretsファイル（BLE UUIDなど）
-Secrets.swift
+Secrets.xcconfig
 
 # 他に追加の秘密情報ファイル
 **/Config/

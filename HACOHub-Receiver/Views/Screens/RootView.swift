@@ -19,7 +19,7 @@ struct RootView: View {
         .transition(.opacity)
       } else {
         NavigationStack {
-          BLETestView()
+          BLEDeviceControllView()
         }
       }
     }

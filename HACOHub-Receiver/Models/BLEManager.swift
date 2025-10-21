@@ -232,7 +232,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let value: UInt32 = 0x6B59AC
 
     // UInt32を3バイトに分解してDataに変換
-    var bytes: [UInt8] = [
+    let bytes: [UInt8] = [
       UInt8((value >> 16) & 0xFF),
       UInt8((value >> 8) & 0xFF),
       UInt8(value & 0xFF)
