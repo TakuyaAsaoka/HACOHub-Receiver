@@ -7,24 +7,38 @@
 
 import SwiftUI
 
-struct BaseLayout: View {
+struct BaseLayout<Content: View>: View {
+  let content: Content
+
+  init(@ViewBuilder content: () -> Content) {
+    self.content = content()
+  }
+
   var body: some View {
     ZStack {
       getRGBColor(19, 20, 38)
+        .ignoresSafeArea()
 
       VStack(spacing: 0) {
         Header()
 
-        Image("HACOHubBackgroundLogo")
-          .resizable()
-          .scaledToFit()
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        ZStack {
+          Image("HACOHubBackgroundLogo")
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+          content
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        }
       }
     }
-    .ignoresSafeArea()
   }
-} 
+}
 
 #Preview {
-    BaseLayout()
+  BaseLayout {
+    Text.sfProBold("Hello, World", size: 50)
+      .foregroundColor(.white)
+  }
 }
