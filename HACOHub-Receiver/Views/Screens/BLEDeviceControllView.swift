@@ -83,8 +83,6 @@ struct BLEDeviceControllView: View {
       QRScanView(qrCodeValue: $qrCodeValue, onQRCodeDetected: { value in
         print("QRコード読み取り: \(value)")
         qrCodeValue = value
-        // TODO: 不要になったら消す
-//        isShowingQRScan = false
 
         // BLEデバイスを開錠
         var deviceFound = false
@@ -111,6 +109,9 @@ struct BLEDeviceControllView: View {
           print("⚠️ 接続中のデバイスに操作対象のデバイスが見つかりませんでした: \(deviceName)")
         }
       })
+      .frame(width: 888, height: 500)
+      .navigationBarBackButtonHidden(true)
+      .toolbar(.hidden)
     }
   }
 }

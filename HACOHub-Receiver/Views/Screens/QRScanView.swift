@@ -34,7 +34,7 @@ struct QRScanView: UIViewControllerRepresentable {
     // プレビュー用 Layer
     let previewLayer = AVCaptureVideoPreviewLayer(session: session)
     previewLayer.frame = controller.view.bounds
-    previewLayer.videoGravity = .resizeAspectFill
+    previewLayer.videoGravity = .resizeAspect
     controller.view.layer.addSublayer(previewLayer)
 
     if let connection = previewLayer.connection {
@@ -99,7 +99,6 @@ struct QRScanView: UIViewControllerRepresentable {
     let cornerLength: CGFloat = 64
     let cornerRadius: CGFloat = 8
     let borderLineWidth: CGFloat = 4
-    let cornerLineWidth: CGFloat = 8
 
     // === 緑の外枠 ===
     let borderLayer = CAShapeLayer()
