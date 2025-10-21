@@ -31,7 +31,6 @@ struct QRScanView: View {
               for info in bleManager.peripheralInfos {
                 if info.peripheral.name == deviceName {
                   deviceFound = true
-
                   if password == "123456" {
                     bleManager.unlockDevice(info.peripheral)
                   } else {

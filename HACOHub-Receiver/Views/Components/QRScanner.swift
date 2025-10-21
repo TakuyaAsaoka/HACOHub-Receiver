@@ -33,7 +33,7 @@ struct QRScanner: UIViewControllerRepresentable {
     // プレビュー用 Layer
     let previewLayer = AVCaptureVideoPreviewLayer(session: session)
     previewLayer.frame = controller.view.bounds
-    previewLayer.videoGravity = .resizeAspect
+    previewLayer.videoGravity = .resizeAspectFill
 
     controller.view.layer.addSublayer(previewLayer)
 
