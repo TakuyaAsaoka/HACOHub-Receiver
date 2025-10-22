@@ -86,16 +86,21 @@ struct QRScanner: UIViewControllerRepresentable {
     var previewLayer: AVCaptureVideoPreviewLayer?
     var session: AVCaptureSession?
 
+    private var lastScannedCode: String?
+
     init(_ parent: QRScanner) {
       self.parent = parent
     }
 
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-      if let metadata = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
-         metadata.type == .qr,
-         let stringValue = metadata.stringValue {
-        parent.onQRCodeDetected?(stringValue)
-      }
+      guard let metadata = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+            metadata.type == .qr,
+            let stringValue = metadata.stringValue else { return }
+
+      if stringValue == lastScannedCode { return }
+
+      lastScannedCode = stringValue
+      parent.onQRCodeDetected?(stringValue)
     }
   }
 }
