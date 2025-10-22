@@ -10,6 +10,7 @@ import CoreBluetooth
 
 struct QRScanView: View {
   @ObservedObject var bleManager: BLEManager
+  @State var isShowingQRVerifiedView: Bool = false
 
   var body: some View {
     BaseLayout {
@@ -32,7 +33,10 @@ struct QRScanView: View {
                 if info.peripheral.name == deviceName {
                   deviceFound = true
                   if password == "123456" {
-                    bleManager.unlockDevice(info.peripheral)
+                    isShowingQRVerifiedView = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                      bleManager.unlockDevice(info.peripheral)
+                    }
                   } else {
                     print("パスワードが違います")
                   }
@@ -68,6 +72,11 @@ struct QRScanView: View {
           .offset(y: -70)
       }
       .padding(.top, 30)
+      .navigationDestination(isPresented: $isShowingQRVerifiedView) {
+        QRVerifiedView()
+          .navigationBarBackButtonHidden(true)
+          .toolbar(.hidden)
+      }
     }
   }
 }
