@@ -17,21 +17,7 @@ struct QRFrameView: View {
 
   var body: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: cornerRadius)
-        .stroke(getRGBColor(79, 190, 159), lineWidth: borderLineWidth)
-        .frame(width: size, height: size)
-
-      RoundedCornerOverlay(
-        size: size,
-        radius: cornerRadius,
-        cornerLength: cornerLength,
-        lineWidth: whiteLineWidth,
-        borderLineWidth: borderLineWidth
-      )
-    }
-
-    ZStack {
-      // 尾（線の後ろ）
+      // 残像
       LinearGradient(
         gradient: Gradient(stops: [
           .init(color: getRGBColor(79, 190, 159).opacity(0.0), location: 0.0),
@@ -39,16 +25,16 @@ struct QRFrameView: View {
           .init(color: getRGBColor(79, 190, 159).opacity(0.4), location: 0.6),
           .init(color: getRGBColor(79, 190, 159).opacity(0.6), location: 1.0)
         ]),
-        startPoint: .top,   // 上から下に尾
+        startPoint: .top,
         endPoint: .bottom
       )
-      .frame(width: size - borderLineWidth*2, height: 64)
+      .frame(width: size, height: 64)
       .offset(y: scanPosition - size/2 - 64/2) // 尾が線の上に来るように調整
 
-      // メインの線（先端）
+      // メインの線
       Rectangle()
         .fill(getRGBColor(79, 190, 159))
-        .frame(width: size - borderLineWidth*2, height: 4)
+        .frame(width: size, height: 4)
         .offset(y: scanPosition - size/2)
     }
     .onAppear {
@@ -61,6 +47,20 @@ struct QRFrameView: View {
     }
     .frame(width: size, height: size)
     .clipped()
+
+    ZStack {
+      RoundedRectangle(cornerRadius: cornerRadius)
+        .stroke(getRGBColor(79, 190, 159), lineWidth: borderLineWidth)
+        .frame(width: size, height: size)
+
+      RoundedCornerOverlay(
+        size: size,
+        radius: cornerRadius,
+        cornerLength: cornerLength,
+        lineWidth: whiteLineWidth,
+        borderLineWidth: borderLineWidth
+      )
+    }
   }
 }
 
