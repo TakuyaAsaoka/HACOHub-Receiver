@@ -61,6 +61,12 @@ struct QRFrameView: View {
         borderLineWidth: borderLineWidth
       )
     }
+
+    Circle()
+      .fill(getRGBColor(30, 41, 57, 0.8))
+      .frame(width: 112, height: 112)
+
+    SmallCornerOverlay(size: 28, cornerLength: 10, lineWidth: 5)
   }
 }
 
@@ -112,6 +118,48 @@ struct RoundedCornerShape: Shape {
   }
 }
 
+struct SmallCornerOverlay: View {
+  let size: CGFloat
+  let cornerLength: CGFloat
+  let lineWidth: CGFloat
+  let cornerRadius: CGFloat = 4
+  var body: some View {
+    ZStack {
+      corner(rotation: .degrees(0))
+        .offset(x: -size/2 + cornerLength/2, y: -size/2 + cornerLength/2) // 左上
+
+      corner(rotation: .degrees(90))
+        .offset(x: size/2 - cornerLength/2, y: -size/2 + cornerLength/2)  // 右上
+
+      corner(rotation: .degrees(180))
+        .offset(x: size/2 - cornerLength/2, y: size/2 - cornerLength/2)   // 右下
+
+      corner(rotation: .degrees(270))
+        .offset(x: -size/2 + cornerLength/2, y: size/2 - cornerLength/2)  // 左下
+    }
+    .frame(width: size, height: size)
+  }
+
+  func corner(rotation: Angle) -> some View {
+    Path { path in
+      // 水平線を右方向に描く
+      path.move(to: CGPoint(x: cornerRadius, y: 0))
+      path.addLine(to: CGPoint(x: cornerLength, y: 0))
+      // 角の円弧（きれいな丸角）
+      path.addArc(
+        center: CGPoint(x: cornerRadius, y: cornerRadius),
+        radius: cornerRadius,
+        startAngle: .degrees(270),
+        endAngle: .degrees(180),
+        clockwise: true
+      )
+      // 垂直線を下方向に描く
+      path.addLine(to: CGPoint(x: 0, y: cornerLength))
+    }
+    .stroke(getRGBColor(79, 190, 159), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+    .rotationEffect(rotation)
+  }
+}
 
 #Preview {
   ZStack {
