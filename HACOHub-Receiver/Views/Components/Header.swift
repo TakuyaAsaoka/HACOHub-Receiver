@@ -16,7 +16,7 @@ struct Header: View {
         Image("HACOHubGreenIcon")
           .frame(width: 50, height: 50)
 
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
           Text.sfProRegular("HACOHub Locker System", size: 24)
             .foregroundColor(.white)
 
