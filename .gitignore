@@ -2,7 +2,6 @@
 **/*xcworkspace/
 **/*xcuserdata/
 **/*xcuserstate/
-**/*.pbxproj
 DerivedData/
 build/
 *.moved-aside
