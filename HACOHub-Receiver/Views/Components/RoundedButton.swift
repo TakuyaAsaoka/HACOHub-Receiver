@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct RoundedButtonBase: View {
+	let iconName: String?
   let text: String
   let textColor: Color
+	let weight: FontWeight
   let size: CGFloat
-  let weight: FontWeight
   let bgColor: Color
   let vPadding: CGFloat
   let lineColor: Color?
@@ -20,10 +21,11 @@ struct RoundedButtonBase: View {
   let action: () -> Void
 
   init(
+    iconName: String? = nil,
     text: String,
     textColor: Color,
+		weight: FontWeight,
     size: CGFloat,
-    weight: FontWeight,
     bgColor: Color,
     vPadding: CGFloat,
     lineColor: Color? = nil,
@@ -31,10 +33,11 @@ struct RoundedButtonBase: View {
     radius: CGFloat,
     action: @escaping () -> Void
   ) {
+		self.iconName = iconName
     self.text = text
     self.textColor = textColor
+		self.weight = weight
     self.size = size
-    self.weight = weight
     self.bgColor = bgColor
     self.vPadding = vPadding
     self.lineColor = lineColor
@@ -48,16 +51,19 @@ struct RoundedButtonBase: View {
       action()
     } label: {
       Group {
-        switch weight {
-        case .regular:
-          Text.sfProRegular(text, size: size)
-        case .medium:
-          Text.sfProMedium(text, size: size)
-        case .semiBold:
-          Text.sfProSemiBold(text, size: size)
-        case .bold:
-          Text.sfProBold(text, size: size)
-        }
+				HStack(spacing: 16) {
+					Image(iconName ?? "")
+					switch weight {
+					case .regular:
+						Text.sfProRegular(text, size: size)
+					case .medium:
+						Text.sfProMedium(text, size: size)
+					case .semiBold:
+						Text.sfProSemiBold(text, size: size)
+					case .bold:
+						Text.sfProBold(text, size: size)
+					}
+				}
       }
       .foregroundColor(textColor)
       .padding(.vertical, vPadding)
@@ -77,6 +83,7 @@ struct RoundedButtonBase: View {
 }
 
 struct WhiteRoundedButton: View {
+	let iconName: String?
   let text: String
   let textColor: Color
   let weight: FontWeight
@@ -84,13 +91,34 @@ struct WhiteRoundedButton: View {
   let vPadding: CGFloat
   let radius: CGFloat
   let action: () -> Void
+	
+	init(
+		iconName: String? = nil,
+		text: String,
+		textColor: Color,
+		weight: FontWeight,
+		size: CGFloat,
+		vPadding: CGFloat,
+		radius: CGFloat,
+		action: @escaping () -> Void
+	) {
+		self.iconName = iconName
+		self.text = text
+		self.textColor = textColor
+		self.weight = weight
+		self.size = size
+		self.vPadding = vPadding
+		self.radius = radius
+		self.action = action
+	}
 
   var body: some View {
     RoundedButtonBase(
+			iconName: iconName,
       text: text,
       textColor: textColor,
+			weight: weight,
       size: size,
-      weight: weight,
       bgColor: .white,
       vPadding: vPadding,
       lineColor: getRGBColor(66, 74, 83),
@@ -102,19 +130,39 @@ struct WhiteRoundedButton: View {
 }
 
 struct PrimaryRoundedButton: View {
+	let iconName: String?
   let text: String
   let weight: FontWeight
   let size: CGFloat
   let vPadding: CGFloat
   let radius: CGFloat
   let action: () -> Void
+	
+	init(
+		iconName: String? = nil,
+		text: String,
+		weight: FontWeight,
+		size: CGFloat,
+		vPadding: CGFloat,
+		radius: CGFloat,
+		action: @escaping () -> Void
+	) {
+		self.iconName = iconName
+		self.text = text
+		self.weight = weight
+		self.size = size
+		self.vPadding = vPadding
+		self.radius = radius
+		self.action = action
+	}
 
   var body: some View {
     RoundedButtonBase(
+			iconName: iconName,
       text: text,
       textColor: .white,
+			weight: weight,
       size: size,
-      weight: weight,
       bgColor: getRGBColor(79, 190, 159),
       vPadding: vPadding,
       radius: radius,
@@ -124,19 +172,39 @@ struct PrimaryRoundedButton: View {
 }
 
 struct GrayRoundedButton: View {
+	let iconName: String?
   let text: String
   let weight: FontWeight
   let size: CGFloat
   let vPadding: CGFloat
   let radius: CGFloat
   let action: () -> Void
+	
+	init(
+		iconName: String? = nil,
+		text: String,
+		weight: FontWeight,
+		size: CGFloat,
+		vPadding: CGFloat,
+		radius: CGFloat,
+		action: @escaping () -> Void
+	) {
+		self.iconName = iconName
+		self.text = text
+		self.size = size
+		self.weight = weight
+		self.vPadding = vPadding
+		self.radius = radius
+		self.action = action
+	}
 
   var body: some View {
     RoundedButtonBase(
+			iconName: iconName,
       text: text,
       textColor: .black,
+			weight: weight,
       size: size,
-      weight: weight,
       bgColor: getRGBColor(175, 184, 193),
       vPadding: vPadding,
       radius: radius,
@@ -150,24 +218,24 @@ struct GrayRoundedButton: View {
     WhiteRoundedButton(
       text: "test",
       textColor: .black,
-      weight: .regular,
-      size: 20,
+			weight: .regular,
+			size: 20,
       vPadding: 20,
       radius: 16,
       action: {}
     )
     PrimaryRoundedButton(
       text: "test",
-      weight: .bold,
-      size: 20,
+			weight: .bold,
+			size: 20,
       vPadding: 20,
       radius: 16,
       action: {}
     )
     GrayRoundedButton(
       text: "test",
-      weight: .bold,
-      size: 20,
+			weight: .bold,
+			size: 20,
       vPadding: 20,
       radius: 16,
       action: {}
