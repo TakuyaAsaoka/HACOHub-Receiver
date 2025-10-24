@@ -9,8 +9,7 @@ import SwiftUI
 
 struct Header: View {
   var body: some View {
-    ZStack {
-      getRGBColor(28, 30, 47)
+//      getRGBColor(28, 30, 47)
 
       HStack(spacing: 16) {
         Image("HACOHubGreenIcon")
@@ -30,14 +29,15 @@ struct Header: View {
 
         Spacer()
       }
+			.padding(.vertical, 26)
       .padding(.leading, 32)
-    }
-    .ignoresSafeArea()
-    .shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
-    .shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 4)
+			.background(getRGBColor(28, 30, 47))
+			.shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
+			.shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 4)
   }
 }
 
 #Preview {
     Header()
+			.ignoresSafeArea()
 }
