@@ -56,7 +56,7 @@ struct QRScanner: UIViewControllerRepresentable {
         // ここを0/90/270に変えるとカメラの向きが変わる
         // 0はカメラが右辺に来る時に正しく映る
         // 180はカメラが左辺に来る時に正しく映る
-        connection.videoRotationAngle = 0
+        connection.videoRotationAngle = 180
       }
     }
 

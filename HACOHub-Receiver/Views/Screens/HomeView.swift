@@ -10,32 +10,23 @@ import CoreBluetooth
 
 struct HomeView: View {
   @ObservedObject var bleManager: BLEManager
-  @State var isShowingQRScanView: Bool = false
+	@Binding var path: NavigationPath
 
-  var body: some View {
-    BaseLayout {
-      Button {
-        print("")
-      } label: {
-        PrimaryRoundedButton(
-					iconName: "QRIcon",
-          text: "Scan QR Code",
-					weight: .bold,
-					size: 40,
-          vPadding: 26,
-          radius: 11,
-          action: {
-            isShowingQRScanView = true
-          }
-        )
-        .frame(width: 800)
-				.offset(y: -25)
-      }
-    }
-    .navigationDestination(isPresented: $isShowingQRScanView) {
-      QRScanView(bleManager: bleManager)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden)
-    }
+	var body: some View {
+		BaseLayout {
+			PrimaryRoundedButton(
+				iconName: "QRIcon",
+				text: "Scan QR Code",
+				weight: .bold,
+				size: 40,
+				vPadding: 26,
+				radius: 11,
+				action: {
+					path.append("scan")
+				}
+			)
+			.frame(width: 800)
+			.offset(y: -25)
+		}
   }
 }

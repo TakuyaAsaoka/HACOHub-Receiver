@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct QRVerifiedView: View {
+	@State private var countdown = 5
+	@Binding var path: NavigationPath
+	
   var body: some View {
     BaseLayout {
       VStack(spacing: 53) {
@@ -134,9 +137,19 @@ struct QRVerifiedView: View {
       }
       .frame(width: 896)
     }
+		.onAppear {
+						 startCountdown()
+				 }
   }
-}
-
-#Preview {
-    QRVerifiedView()
+	
+	private func startCountdown() {
+		 Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+			 if countdown > 1 {
+					 countdown -= 1
+			 } else {
+					 timer.invalidate()
+					 path.removeLast(path.count - 1)
+			 }
+		 }
+	 }
 }

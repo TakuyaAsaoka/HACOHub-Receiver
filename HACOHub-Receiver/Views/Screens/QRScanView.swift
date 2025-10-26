@@ -10,7 +10,7 @@ import CoreBluetooth
 
 struct QRScanView: View {
   @ObservedObject var bleManager: BLEManager
-  @State var isShowingQRVerifiedView: Bool = false
+	@Binding var path: NavigationPath
 
   var body: some View {
     BaseLayout {
@@ -33,8 +33,9 @@ struct QRScanView: View {
                 if info.peripheral.name == deviceName {
                   deviceFound = true
                   if password == "123456" {
-                    isShowingQRVerifiedView = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+//                    isShowingQRVerifiedView = true
+										path.append("verified")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                       bleManager.unlockDevice(info.peripheral)
                     }
                   } else {
@@ -96,11 +97,11 @@ struct QRScanView: View {
           .offset(y: -70)
       }
       .padding(.top, 30)
-      .navigationDestination(isPresented: $isShowingQRVerifiedView) {
-        QRVerifiedView()
-          .navigationBarBackButtonHidden(true)
-          .toolbar(.hidden)
-      }
+//      .navigationDestination(isPresented: $isShowingQRVerifiedView) {
+//        QRVerifiedView()
+//          .navigationBarBackButtonHidden(true)
+//          .toolbar(.hidden)
+//      }
     }
   }
 }

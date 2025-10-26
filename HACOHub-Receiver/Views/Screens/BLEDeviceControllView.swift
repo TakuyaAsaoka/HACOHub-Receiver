@@ -10,9 +10,9 @@ import CoreBluetooth
 
 struct BLEDeviceControllView: View {
   @StateObject private var bleManager = BLEManager()
-  @State private var isShowingHomeView = false
   @State private var connectedPeripheral: CBPeripheral? = nil
   @State private var discoveredPeripherals: [PeripheralInfo] = []
+	@Binding var path: NavigationPath
 
   var body: some View {
     VStack(spacing: 16) {
@@ -39,7 +39,7 @@ struct BLEDeviceControllView: View {
         .disabled(!bleManager.isSwitchedOn)
 
         Button {
-          isShowingHomeView = true
+					path.append("home")
         } label: {
           Label("QRコード読み取り", systemImage: "qrcode.viewfinder")
             .frame(maxWidth: .infinity)
@@ -78,14 +78,23 @@ struct BLEDeviceControllView: View {
         }
       }
     }
-    .navigationDestination(isPresented: $isShowingHomeView) {
-      HomeView(bleManager: bleManager)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden)
-    }
+		.navigationDestination(for: String.self) { destination in
+			switch destination {
+			case "home":
+				HomeView(bleManager: bleManager, path: $path)
+					.navigationBarBackButtonHidden(true)
+					.toolbar(.hidden)
+			case "scan":
+				QRScanView(bleManager: bleManager, path: $path)
+					.navigationBarBackButtonHidden(true)
+					.toolbar(.hidden)
+			case "verified":
+				QRVerifiedView(path: $path)
+					.navigationBarBackButtonHidden(true)
+					.toolbar(.hidden)
+			default:
+				EmptyView()
+			}
+		}
   }
-}
-
-#Preview {
-  BLEDeviceControllView()
 }

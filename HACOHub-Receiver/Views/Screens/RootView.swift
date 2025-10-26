@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RootView: View {
   @State private var isActive = false
+	@State private var path = NavigationPath()
 
   var body: some View {
     ZStack {
@@ -18,8 +19,8 @@ struct RootView: View {
         }
         .transition(.opacity)
       } else {
-        NavigationStack {
-          BLEDeviceControllView()
+				NavigationStack(path: $path) {
+          BLEDeviceControllView(path: $path)
         }
       }
     }
