@@ -119,20 +119,32 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   }
 
   func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-    if let error = error {
-      print("読み取りエラー: \(error.localizedDescription)")
-      return
-    }
+		if let error = error {
+				 print("読み取りエラー: \(error.localizedDescription)")
+				 return
+		 }
+		 
+		 guard let data = characteristic.value else {
+				 print("読み取りデータなし")
+				 return
+		 }
 
-    guard let data = characteristic.value else { return }
-
-    // データを文字列に変換（UTF-8の場合）
-    if let stringValue = String(data: data, encoding: .utf8) {
-      print("読み取り成功: \(stringValue)")
-    } else {
-      print("読み取り成功、バイナリ: \(data)")
-    }
+		if let firstByte = data.first {
+				print("読み取り成功: \(firstByte)")
+				updatePowerValue(for: peripheral, data: data)
+		} else {
+				print("データが空です")
+		}
   }
+	
+	func updatePowerValue(for peripheral: CBPeripheral, data: Data) {
+		guard let firstByte = data.first else { return }
+
+		if let index = peripheralInfos.firstIndex(where: { $0.peripheral.identifier == peripheral.identifier }) {
+			peripheralInfos[index].power = Int(firstByte)
+			print("Updated power: \(peripheralInfos[index].power) (\(peripheralInfos[index].powerString))")
+		}
+	}
 
   // 切断時に呼ばれる処理
   func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
@@ -214,7 +226,53 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
     peripheral.writeValue(data, for: characteristic, type: .withResponse)
   }
+	
+	func readPower(_ peripheral: CBPeripheral) {
+		print("readPower")
+		guard let serviceUUID: CBUUID = uuidWithAlias(alias: 0x0100) else { return }
+		guard let characteristicUUID: CBUUID = uuidWithAlias(alias: 0x0102) else { return }
+		guard let characteristic = findCharacteristic(
+			peripheral: peripheral,
+			serviceUUID: serviceUUID,
+			characteristicUUID: characteristicUUID)
+		else {
+			print("❌ 書き込みキャラなし")
+			return
+		}
 
+		peripheral.readValue(for: characteristic)
+	}
+
+	func writePower(_ peripheral: CBPeripheral, newPower: Int) {
+		print("✏️ 電波信号変更: \(newPower)")
+		guard let serviceUUID: CBUUID = uuidWithAlias(alias: 0x0100) else { return }
+		guard let characteristicUUID: CBUUID = uuidWithAlias(alias: 0x0102) else { return }
+		guard let characteristic = findCharacteristic(
+			peripheral: peripheral,
+			serviceUUID: serviceUUID,
+			characteristicUUID: characteristicUUID)
+		else {
+			print("❌ 書き込みキャラなし")
+			return
+		}
+
+		var byte: UInt8 = 0x00
+		switch newPower {
+		case 0:
+				byte = 0x00   // 0 dBm
+		case 4:
+				byte = 0x01   // +4 dBm
+		case 8:
+				byte = 0x08   // +8 dBm
+		default:
+				print("⚠️ 未定義の値: \(newPower) → デフォルト(0x00)を送信")
+				byte = 0x00
+		}
+
+		let data = Data([byte])
+		peripheral.writeValue(data, for: characteristic, type: .withResponse)
+	}
+	
   func registerDevice(_ peripheral: CBPeripheral) {
     print("🔍 登録: \(peripheral.name ?? "Unknown")")
     guard let serviceUUID: CBUUID = uuidWithAlias(alias: 0x0100) else { return }
