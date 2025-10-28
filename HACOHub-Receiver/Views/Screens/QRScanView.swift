@@ -33,11 +33,11 @@ struct QRScanView: View {
                 if info.peripheral.name == deviceName {
                   deviceFound = true
                   if password == "123456" {
-//                    isShowingQRVerifiedView = true
 										path.append("verified")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                       bleManager.unlockDevice(info.peripheral)
                     }
+										playFanfare()
                   } else {
                     print("パスワードが違います")
                   }
@@ -51,23 +51,19 @@ struct QRScanView: View {
             .frame(width: 888, height: 500)
             .overlay(
                 ZStack {
-                    // 枠
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(getRGBColor(54, 65, 83), lineWidth: 4)
                     
-                    // グリッド線
                     Path { path in
                         let width = 888.0
                         let height = 500.0
                         
-                        // 縦線
                         for i in 1..<3 {
                             let x = width / 3 * CGFloat(i)
                             path.move(to: CGPoint(x: x, y: 0))
                             path.addLine(to: CGPoint(x: x, y: height))
                         }
                         
-                        // 横線
                         for i in 1..<3 {
                             let y = height / 3 * CGFloat(i)
                             path.move(to: CGPoint(x: 0, y: y))
@@ -97,11 +93,6 @@ struct QRScanView: View {
           .offset(y: -70)
       }
       .padding(.top, 30)
-//      .navigationDestination(isPresented: $isShowingQRVerifiedView) {
-//        QRVerifiedView()
-//          .navigationBarBackButtonHidden(true)
-//          .toolbar(.hidden)
-//      }
     }
   }
 }
