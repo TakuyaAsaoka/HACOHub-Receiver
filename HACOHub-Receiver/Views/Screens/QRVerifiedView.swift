@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct QRVerifiedView: View {
-	@State private var countdown = 5
+	@State private var countdown = 15
 	@Binding var path: NavigationPath
 	
   var body: some View {
@@ -147,8 +147,8 @@ struct QRVerifiedView: View {
 			 if countdown > 1 {
 					 countdown -= 1
 			 } else {
-					 timer.invalidate()
-					 path.removeLast(path.count - 1)
+				 timer.invalidate()
+				 path.removeLast(path.count - 1)
 			 }
 		 }
 	 }
